@@ -1,0 +1,18 @@
+.title{
+    text-align: center;
+}
+.ul-polls-title {
+   padding:20px; 
+}
+
+.ul-polls-title li{
+    background: #cce5ff;
+    margin: 5px;
+    list-style:none;
+    text-align:center;
+    padding:10px;
+}
+.ul-polls-title li:hover{
+    background:#D0CCFF;
+    cursor:pointer;
+}

@@ -1,57 +1,166 @@
 'use strict';
 
 var path = process.cwd();
-var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
+var data_model = require('../model/data-modeling.js');
+var ServerHandler = require('../controllers/ServerHandler.js');
+var user_id; //The variable to store the user id of the newly created poll
 
-module.exports = function (app, passport) {
+module.exports = function(app, db) {
 
-	function isLoggedIn (req, res, next) {
-		if (req.isAuthenticated()) {
-			return next();
-		} else {
-			res.redirect('/login');
-		}
-	}
+	var serverHandler = new ServerHandler();
 
-	var clickHandler = new ClickHandler();
-
+	//This is the root directory and is where the main page is displayed
 	app.route('/')
-		.get(isLoggedIn, function (req, res) {
-			res.sendFile(path + '/public/index.html');
+		.get(function(req, res) {
+			res.sendFile(path + '/public/rootPage.html');
 		});
 
-	app.route('/login')
-		.get(function (req, res) {
-			res.sendFile(path + '/public/login.html');
+	//Making a post request to the root directory so as to fetch all the polls created so far and display on the main page	
+	app.route('/')
+		.post(function(req, res) {
+			serverHandler.getPolls(db, function(data) {
+				res.send(data);
+			});
+			
+			if(serverHandler.checkForEmptyObject(req.body) == false){
+				console.log('I am in this if statement');
+				if(req.body.status !== 'connected'){
+					req.session.destroy(function(err){
+						if(err){
+							throw err;
+						}	
+						console.log('This session has been erased');
+					});
+				}
+				else{
+					req.session.fbID = req.body.authResponse.userID; //this session property stores the fb id of the user
+				}
+				
+			}
 		});
 
-	app.route('/logout')
-		.get(function (req, res) {
-			req.logout();
-			res.redirect('/login');
+	//This route is for when a user clicks on the poll from the home page and tries to see a poll
+	app.route('/find-poll')
+		.get(function(req, res) {
+			console.log('Fired get request for find-poll');
+			res.sendFile(path + '/public/findPoll.html');
 		});
 
-	app.route('/profile')
-		.get(isLoggedIn, function (req, res) {
-			res.sendFile(path + '/public/profile.html');
+	//This route is for when a user clicks on the poll and the poll data needs to be retrieved from the model 	
+	app.route('/find-poll')
+		.post(function(req, res) {
+			console.log('Inside find-poll');
+
+			//This req.body is empty and is from findPollClient.js
+			if (serverHandler.checkForEmptyObject(req.body) == true) {
+				console.log('This req.body is empty and is from findPollClient.js');
+				//call the serverHandler method to get the required data back
+				serverHandler.check(db, req.session.poll_id, function(err, doc) {
+					if (err) {
+						console.log('Error found');
+						throw err;
+					}
+					console.log('Returned from serverHandler.check');
+					console.log(doc);
+					res.json(doc);
+				});
+
+			}
+
+			//This req.body is not empty and is from rootPageClient.js
+			else if (serverHandler.checkForEmptyObject(req.body) == false) {
+				console.log('This req.body is not empty and is from rootPageClient.js');
+				req.session.poll_id = req.body.poll_id;
+				console.log(req.session);
+				res.send('Done here');
+			}
 		});
 
-	app.route('/api/:id')
-		.get(isLoggedIn, function (req, res) {
-			res.json(req.user.github);
+	app.route('/my-polls')
+		.get(function(req, res) {
+			res.sendFile(path + '/public/myPolls.html');
 		});
 
-	app.route('/auth/github')
-		.get(passport.authenticate('github'));
+	app.route('/my-polls')
+		.post(function(req, res) {
+			console.log('Logging fbID in my-polls POST route');
+			console.log(req.session.fbID);
+			serverHandler.getPollsByUser(db, req.session.fbID, function(err, doc){
+				res.json(doc);
+			});
+		});
 
-	app.route('/auth/github/callback')
-		.get(passport.authenticate('github', {
-			successRedirect: '/',
-			failureRedirect: '/login'
-		}));
 
-	app.route('/api/:id/clicks')
-		.get(isLoggedIn, clickHandler.getClicks)
-		.post(isLoggedIn, clickHandler.addClick)
-		.delete(isLoggedIn, clickHandler.resetClicks);
+	//The poll-create route will give the user the option of creating a poll
+	app.route('/poll-create')
+		.get(function(req, res) {
+			res.sendFile(path + '/public/pollcreation.html');
+		});
+
+
+	//This is the route for creating a new poll by authenticated users. Authentication still needs to be added. 	
+	app.route('/poll-create')
+		.post(function(req, res) {
+			console.log('inside poll-create post request');
+			console.log(req.body);
+
+			serverHandler.newPoll(req, res, db, function(id) {
+				console.log('It worked');
+				req.session.poll_id = id;
+				res.json(id);
+			});
+
+		});
+
+	//The above response will redirect to this route, and here is where the poll data will be served up
+	app.route('/new-poll')
+		.get(function(req, res) {
+			console.log('Inside get request for new poll');
+			console.log(req.session.poll_id);
+			res.sendFile(path + '/public/pollvisualization.html');
+		});
+
+	//This is the route for making a post request to the same URL. Specifically to obtain the document inserted previously through creating a new poll
+	app.route('/new-poll')
+		.post(function(req, res) {
+			console.log('Inside new poll post');
+
+			serverHandler.check(db, req.session.poll_id, function(err, doc) {
+				if (err) {
+					console.log('There is an error');
+					throw err;
+				}
+				if (doc) {
+					res.json(doc); //send the json document generated by the poll creation by mongoDb to pollvisualizationClient.js through ajax-functions.js
+				}
+			});
+
+		});
+
+	//Route for when an option is entered
+	app.route('/new-poll/option-entered')
+		.post(function(req, res) {
+			console.log('In new-poll/option-entered');
+			console.log(req.body);
+
+			var field = req.body.value;
+			serverHandler.addPollResult(db, req.session.poll_id, field, function(doc) {
+				if (doc) {
+					console.log('Successfully updated the document');
+					res.json(doc);
+				}
+			});
+		});
+
+	app.route('/new-poll/delete-poll')
+		.post(function(req, res) {
+			var id = req.body.id; //place a different variable name than the global user_id
+			var fbID = req.session.fbID;
+
+			serverHandler.deletePoll(db, id, fbID,function(deleteCount) {
+				console.log('This is the number of documents deleted: ' + deleteCount);
+				res.json(deleteCount);
+			});
+		});
+
 };

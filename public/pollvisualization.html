@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+
+	<html>
+
+	<head>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<link rel="stylesheet" href="/public/css/pollvisualization.css">
+	</head>
+
+	<body>
+		<div class='container'>
+			<div class='row'>
+				<div class='col-md-10 col-md-offset-1 well'>
+					<div class='col-md-5'>
+						<h1>Title Placeholder</h1>
+						<p>My vote goes to</p>
+						<div class='radio'>
+							<label>
+	                            <input type = 'radio' value = '0' name = 'options' class = 'radio-options'/>
+	                            <p id = 'radio1'>The value of 1</p>
+                        </label>
+						</div>
+						<div class='input-group custom-div'>
+							<input type='text' class='form-control custom-text' placeholder='Custom'>
+						</div>
+						<div class='submit-wrapper'>
+							<button type='submit' class='btn btn-primary btn-lg submit-butt'>Submit</button>
+						</div>
+						<div class='delete-wrapper'>
+							<button type="button" class="btn btn-danger">Delete</button>
+						</div>
+						
+						<div id="fb-root"></div>
+						<div class="fb-share-button" data-href="https://fcc-votingapp-redixhumayun.c9users.io/new-poll" data-layout="button_count" data-size = "large" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Ffcc-votingapp-redixhumayun.c9users.io%2Fnew-poll&amp;src=sdkpreparse">Share</a></div>
+				
+					</div>
+					<div class='col-sm-6'>
+						<div class='ChartDiv'>
+							<canvas id='myChart'></canvas>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<script src='https://code.jquery.com/jquery-2.2.0.min.js'></script>
+		<script type='text/javascript' src='common/ajax-functions.js'></script>
+		<script type='text/javascript' src='controllers/FacebookSDK.js'></script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.2.2/Chart.bundle.min.js'></script>
+		<script type='text/javascript' src='controllers/pollvisualizationClient.js'></script>
+	</body>
+
+
+	</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href='/public/css/rootPage.css'>
+</head>
+
+<body>
+	<script type = 'text/javascript' src = 'controllers/FacebookRootPageSDK.js'></script>
+	<nav class='navbar navbar-default'>
+		<div class='container-fluid'>
+			<div class='facebook-login-wrapper navbar-right'>
+				<fb:login-button scope="public_profile,email" onlogin="checkLoginState();" data-auto-logout-link="true" class="navbar-btn">
+				</fb:login-button>
+				<div id="status">
+				</div>
+			</div>
+			<div class='myPolls collapse navbar-collapse navbar-right' id='bs-example-navbar-collapse-1'>
+				<ul class='nav navbar-nav'>
+					<li class='liMyPolls'><a href="#">My Polls</a></li>
+				</ul>
+			</div>
+			<div class='newPoll collapse navbar-collapse navbar-right' id='bs-example-navbar-collapse-2'>
+				<ul class='nav navbar-nav'>
+					<li class='liNewPoll'><a href='#'>New Poll</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class='container'>
+		<div class='row'>
+			<div class='col-md-10 col-md-offset-1 well'>
+				<h1 class='title'>My Voting App</h1>
+				<div class='polls-title'>
+					<ul class='ul-polls-title'>
+
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+<script src='https://code.jquery.com/jquery-2.2.0.min.js'></script>
+<script type='text/javascript' src='common/ajax-functions.js'></script>
+<script src='controllers/rootPageClient.js' type='text/javascript'></script>
+
+</html>
